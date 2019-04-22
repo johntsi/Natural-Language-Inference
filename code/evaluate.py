@@ -128,7 +128,7 @@ if __name__ == "__main__":
 	PATH_TO_SENTEVAL = args.path_to_senteval
 	PATH_TO_DATA = PATH_TO_SENTEVAL + "/data/"
 
-	args.checkpoint_path = "./../checkpoints/{}_Adam_X/{}_bestEncoder.pwf".format(args.encoder, args.encoder)
+	args.checkpoint_path = "./../outputs/{}/{}_Adam_X/{}_bestEncoder.pwf".format(args.encoder, args.encoder, args.encoder)
 
 	if args.encoder_name == "LSTM":
 		encoder_model = LSTM_encoder(False, emb_dim, lstm_hidden_size, lstm_num_layers, lstm_dropout_rate)

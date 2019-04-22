@@ -39,7 +39,7 @@ args, unparsed = parser.parse_known_args()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-args.checkpoint_path = "./../checkpoints/{}_Adam_X/{}_bestModel.pwf".format(args.encoder, args.encoder)
+args.checkpoint_path = "./../outputs/{}/{}_Adam_X/{}_bestModel.pwf".format(args.encoder, args.encoder, args.encoder)
 
 if args.encoder == "BoW":
 	args.classifier_dropout_rate = .1
