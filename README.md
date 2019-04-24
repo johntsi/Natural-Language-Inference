@@ -1,14 +1,5 @@
 # Natural Language Inference and Transfer Tasks
 
-## checkpoints
-Pretrained models for BoW, LSTM, biLSTM and biLSTM_maxp
-
-## preprocess_data
-Data generated for efficient training
-can be reproduced by running preprocess.py and then map_unk_token.py
-
-## Code
-
 ### preprocess.py
 *Provide the path for glove.840B.300d and the the snli_1.0 folder
 (in the script, no argparser)
