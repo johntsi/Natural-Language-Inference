@@ -16,8 +16,6 @@ def plot_grad_flow(named_parameters, step):
 	'''Plots the gradients flowing through different layers in the net during training.
 	Can be used for checking for possible gradient vanishing / exploding problems.
 	Taken from https://discuss.pytorch.org/t/check-gradient-flow-in-network/15063/10'''
-
-
 	ave_grads = []
 	max_grads= []
 	layers = []

@@ -5,11 +5,13 @@ from data import Dataset
 from models import MLP
 import seaborn as sns
 import matplotlib.pyplot as plt
+import sys
+import pandas as pd
 
 def accuracy(logits, targets):
 	return torch.mean((torch.max(logits, 1)[1] == targets).double())
 
-def evaluate(dataset, model, batch_size, data_set):
+def evaluate(dataset, model, batch_size, data_set, SNLI):
 
 	# reset index
 	dataset.index = 0
@@ -38,9 +40,12 @@ def evaluate(dataset, model, batch_size, data_set):
 
 			running_accu += accu.item()
 
+		SNLI.iloc[dataset.index - batch_size: dataset.index, -1] = torch.max(logits, 1)[1].cpu().numpy()
+		# print(dataset.SNLI[data_set].loc[:, encoder].iloc[dataset.index - batch_size: dataset.index])
+
 	current_accu = running_accu/steps
 
-	return current_accu
+	return current_accu, SNLI
 
 global device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -91,6 +96,9 @@ data_set = args.data_set
 
 P = {}
 
+dataset = Dataset(args)
+SNLI = dataset.SNLI[data_set].copy()
+
 for encoder in ["BoW", "LSTM", "biLSTM", "biLSTM_maxp"]:
 
 	args.encoder = encoder
@@ -108,17 +116,22 @@ for encoder in ["BoW", "LSTM", "biLSTM", "biLSTM_maxp"]:
 	model.to(device)
 	model.eval()
 
-	for n_unk in range(0, 9):
+	# for n_unk in range(0, 9):
 
-		dataset = Dataset(args)
-		if n_unk > 0:
-			dataset.erase_words(n_unk, data_set)
+	# if n_unk > 0:
+	# 	dataset.erase_words(n_unk, data_set)
 
-		accu = evaluate(dataset, model, args.batch_size, args.data_set)
+	SNLI[encoder] = 0
 
-		P[encoder].append(accu)
+	accu, SNLI = evaluate(dataset, model, args.batch_size, args.data_set, SNLI)
 
-		print(encoder, n_unk, accu)
+	P[encoder].append(accu)
+
+	print(encoder, accu)
+
+SNLI.to_csv("Results.txt", sep = "\t")
+
+sys.exit()
 
 
 sns.set()

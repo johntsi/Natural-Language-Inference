@@ -10,9 +10,6 @@ import io
 
 from models import BoW, LSTM_encoder, biLSTM_maxp_encoder
 
-# import SentEval
-sys.path.insert(0, PATH_TO_SENTEVAL)
-import senteval
 
 # Create dictionary
 def create_dictionary(sentences, threshold=0):
@@ -97,10 +94,6 @@ def batcher(params, batch):
 	return embeddings
 
 
-# Set params for SentEval
-params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 5}
-params_senteval['classifier'] = {'nhid': 1, 'optim': 'rmsprop', 'batch_size': 128,
-								 'tenacity': 3, 'epoch_size': 5}
 
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
@@ -128,30 +121,43 @@ if __name__ == "__main__":
 	PATH_TO_SENTEVAL = args.path_to_senteval
 	PATH_TO_DATA = PATH_TO_SENTEVAL + "/data/"
 
-	args.checkpoint_path = "./../outputs/{}/{}_Adam_X/{}_bestEncoder.pwf".format(args.encoder, args.encoder, args.encoder)
+	# import SentEval
+	sys.path.insert(0, PATH_TO_SENTEVAL)
+	import senteval
 
-	if args.encoder_name == "LSTM":
+	# Set params for SentEval
+	params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 5}
+	params_senteval['classifier'] = {'nhid': 1, 'optim': 'rmsprop', 'batch_size': 128,
+									 'tenacity': 3, 'epoch_size': 5}
+
+	args.checkpoint_path = "./../outputs/{}/{}_Adam_X/{}_bestEncoder.pwf".format(args.encoder_name, args.encoder_name, args.encoder_name)
+
+	if args.encoder_name == "BoW":
+		encoder_model = BoW()
+	elif args.encoder_name == "LSTM":
 		encoder_model = LSTM_encoder(False, emb_dim, lstm_hidden_size, lstm_num_layers, lstm_dropout_rate)
 	elif args.encoder_name == "biLSTM":
 		encoder_model = LSTM_encoder(True, emb_dim, lstm_hidden_size, lstm_num_layers, lstm_dropout_rate)
 	elif args.encoder_name == "biLSTM_maxp":
 		encoder_model = biLSTM_maxp_encoder(lstm_hidden_size, batch_size, emb_dim, lstm_num_layers, lstm_dropout_rate)
 
-	encoder_model.load_state_dict(torch.load(args.checkpoint_path, map_location = device))
-	encoder_model.to(device)
-	encoder_model.eval()
+	if args.encoder_name != "BoW":
+		encoder_model.load_state_dict(torch.load(args.checkpoint_path, map_location = device))
+		encoder_model.to(device)
+		encoder_model.eval()
 
 	print("Loaded {} encoder from checkpoint {}".format(args.encoder_name, args.checkpoint_path))
 
 	se = senteval.engine.SE(params_senteval, batcher, prepare)
 
 	if args.task == "all":
-		tasks = ['STS12', 'STS13', 'STS14', 'STS15', 'STS16',
-				  'MR', 'CR', 'MPQA', 'SUBJ', 'SST2', 'SST5', 'TREC', 'MRPC',
-				  'SICKEntailment', 'SICKRelatedness', 'STSBenchmark',
-				  'Length', 'WordContent', 'Depth', 'TopConstituents',
-				  'BigramShift', 'Tense', 'SubjNumber', 'ObjNumber',
-				  'OddManOut', 'CoordinationInversion']
+		# tasks = ['STS12', 'STS13', 'STS14', 'STS15', 'STS16',
+		# 		  'MR', 'CR', 'MPQA', 'SUBJ', 'SST2', 'SST5', 'TREC', 'MRPC',
+		# 		  'SICKEntailment', 'SICKRelatedness', 'STSBenchmark',
+		# 		  'Length', 'WordContent', 'Depth', 'TopConstituents',
+		# 		  'BigramShift', 'Tense', 'SubjNumber', 'ObjNumber',
+		# 		  'OddManOut', 'CoordinationInversion']
+		tasks = ["MR", "CR", "SUBJ", "TREC", "MRPC", "SICKEntailment"]
 	else:
 		tasks = args.task
 
